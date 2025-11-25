@@ -1,0 +1,31 @@
+name: Daily Auto Commit
+
+on:
+  schedule:
+    # каждый день в 06:00 по UTC
+    - cron: "0 6 * * *"
+  # чтобы можно было запустить руками из вкладки Actions
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update activity file
+        run: |
+          echo "$(date -u) - automated update" >> activity.log
+
+      - name: Commit and push
+        run: |
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add activity.log
+          git commit -m "chore: automated update" || exit 0
+          git push
